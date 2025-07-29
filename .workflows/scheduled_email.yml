@@ -1,1 +1,42 @@
+name: Run Scheduled Colab Notebook
+
+on:
+  schedule:
+    - cron: "0 3:30,11:30,19:30 * * *"  # 05:30, 13:30, 21:30 UTC (adjust if needed)
+  workflow_dispatch:          # Manual trigger
+
+jobs:
+  run-notebook:
+    runs-on: ubuntu-latest
+
+    env:
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install nbconvert nbformat ipykernel jupyter openpyxl
+
+    - name: Run notebook
+      run: |
+        jupyter nbconvert --to notebook --execute Untitled2.ipynb \
+          --output executed_notebook.ipynb \
+          --ExecutePreprocessor.timeout=600 \
+          --ExecutePreprocessor.allow_errors=True
+
+    - name: Upload executed notebook
+      uses: actions/upload-artifact@v4
+      with:
+        name: executed-notebook
+        path: executed_notebook.ipynb
 
