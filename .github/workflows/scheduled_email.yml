@@ -8,11 +8,6 @@ on:
 permissions:
   contents: write
 
-env:
-  EMAIL_USER: ${{ secrets.EMAIL_USER }}
-  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-  EMAIL_TO: ${{ secrets.EMAIL_TO }}
-
 jobs:
   run-notebook:
     runs-on: ubuntu-latest
@@ -46,15 +41,11 @@ jobs:
         server_port: 587
         username: ${{ secrets.EMAIL_USER }}
         password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "✅ Daily Shift Excel Reports"
+        subject: "Excel shift reports"
         body: "Attached are today's automatically generated Excel reports."
         to: ${{ secrets.EMAIL_TO }}
-        from: GitHub Actions <${{ secrets.EMAIL_USER }}>
+        from: ${{ secrets.EMAIL_USER }}
         attachments: output_folder/*.xlsx
-
-    - name: Clean up Excel files from output_folder
-      run: |
-        rm -f output_folder/*.xlsx
 
 
 
