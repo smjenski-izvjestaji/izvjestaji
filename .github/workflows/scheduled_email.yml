@@ -2,11 +2,16 @@ name: Run Scheduled Colab Notebook
 
 on:
   schedule:
-    - cron: "0 12 * * *"  # Every day at 12:00 UTC
-  workflow_dispatch:       # Manual trigger option
+    - cron: "0 3 * * *"  # Runs daily at 05:00 local (UTC+2)
+  workflow_dispatch:
 
 permissions:
-  contents: write           # 👈 Needed to allow push to repo
+  contents: write
+
+env:
+  EMAIL_USER: ${{ secrets.EMAIL_USER }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+  EMAIL_TO: ${{ secrets.EMAIL_TO }}
 
 jobs:
   run-notebook:
@@ -31,21 +36,25 @@ jobs:
           --to notebook \
           --execute source_kod.ipynb \
           --output executed_notebook.ipynb \
-          --ExecutePreprocessor.timeout=300 \
-          --ExecutePreprocessor.allow_errors=False
-          
-    - name: Send Email with Attachment
+          --ExecutePreprocessor.timeout=600 \
+          --ExecutePreprocessor.allow_errors=True
+
+    - name: Send Email with Excel Attachments
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
         server_port: 587
         username: ${{ secrets.EMAIL_USER }}
         password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "Excel Report: New File Generated"
-        body: "Attached is the newly generated Excel file from GitHub Actions."
+        subject: "✅ Daily Shift Excel Reports"
+        body: "Attached are today's automatically generated Excel reports."
         to: ${{ secrets.EMAIL_TO }}
-        from: ${{ secrets.EMAIL_USER }}
+        from: GitHub Actions <${{ secrets.EMAIL_USER }}>
         attachments: output_folder/*.xlsx
+
+    - name: Clean up Excel files from output_folder
+      run: |
+        rm -f output_folder/*.xlsx
 
 
 
