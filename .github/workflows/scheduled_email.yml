@@ -45,7 +45,7 @@ jobs:
         body: "Attached are today's automatically generated Excel reports."
         to: ${{ secrets.EMAIL_TO }}
         from: ${{ secrets.EMAIL_USER }}
-        attachments: output_folder/*.xlsx
+        attachments: excel_reports/*.xlsx
 
 
 
