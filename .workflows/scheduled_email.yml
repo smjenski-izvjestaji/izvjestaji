@@ -29,7 +29,7 @@ jobs:
 
     - name: Run notebook
       run: |
-        jupyter nbconvert --to notebook --execute Untitled2.ipynb \
+        jupyter nbconvert --to notebook --execute source_kod.ipynb \
           --output executed_notebook.ipynb \
           --ExecutePreprocessor.timeout=600 \
           --ExecutePreprocessor.allow_errors=True
