@@ -57,10 +57,6 @@ jobs:
         from: GitHub Actions <${{ secrets.EMAIL_USER }}>
         attachments: output_folder/report_*.xlsx
 
-    - name: 🧹 Clean up output folder
-      run: |
-        rm -f output_folder/*.xlsx
-
 
 
 
