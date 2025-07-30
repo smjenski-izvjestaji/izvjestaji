@@ -2,17 +2,15 @@ name: Run Scheduled Colab Notebook
 
 on:
   schedule:
-    - cron: "0 3 * * *"  # 05:00 local time (adjust if needed)
-  workflow_dispatch:
+    - cron: "0 12 * * *"  # Every day at 12:00 UTC
+  workflow_dispatch:       # Manual trigger option
+
+permissions:
+  contents: write           # 👈 Needed to allow push to repo
 
 jobs:
   run-notebook:
     runs-on: ubuntu-latest
-
-    env:
-      EMAIL_USER: ${{ secrets.EMAIL_USER }}
-      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-      EMAIL_TO: ${{ secrets.EMAIL_TO }}
 
     steps:
     - name: Checkout repository
@@ -25,37 +23,36 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install nbconvert nbformat ipykernel jupyter openpyxl yagmail
+        pip install nbconvert nbformat ipykernel jupyter openpyxl
 
-    - name: Run notebook
+    - name: Execute notebook
       run: |
-        jupyter nbconvert --to notebook --execute source_kod.ipynb \
+        jupyter nbconvert \
+          --to notebook \
+          --execute source_kod.ipynb \
           --output executed_notebook.ipynb \
-          --ExecutePreprocessor.timeout=600 \
-          --ExecutePreprocessor.allow_errors=True
+          --ExecutePreprocessor.timeout=300 \
+          --ExecutePreprocessor.allow_errors=False
+          
+    - name: Send Email with Attachment
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.EMAIL_USER }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "Excel Report: New File Generated"
+        body: "Attached is the newly generated Excel file from GitHub Actions."
+        to: ${{ secrets.EMAIL_TO }}
+        from: ${{ secrets.EMAIL_USER }}
+        attachments: output_folder/*.xlsx
 
-    - name: Send email with Excel attachments
-      run: |
-        python -c "
-import os, yagmail
 
-sender = os.environ['EMAIL_USER']
-password = os.environ['EMAIL_PASSWORD']
-recipient = os.environ['EMAIL_TO']
 
-# List Excel files from output folder
-output_folder = './output_folder'
-excel_files = [os.path.join(output_folder, f) for f in os.listdir(output_folder) if f.endswith('.xlsx')]
 
-if not excel_files:
-    print('❌ No Excel files found to attach.')
-else:
-    yag = yagmail.SMTP(user=sender, password=password)
-    yag.send(to=recipient, subject='📊 Daily Excel Reports', contents='Attached are today\'s Excel files.', attachments=excel_files)
-    print(f'✅ Email sent to {recipient} with {len(excel_files)} Excel file(s).')
-        "
 
-    - name: Clean up Excel output folder
-      run: |
-        rm -f ./output_folder/*.xlsx
+
+
+
+
 
