@@ -2,7 +2,7 @@ name: Run Scheduled Colab Notebook
 
 on:
   schedule:
-    - cron: "0 3:30,11:30,19:30 * * *"  # 05:30, 13:30, 21:30 UTC (adjust if needed)
+    - cron: "0 3 * * *"  # 05 UTC (adjust if needed)
   workflow_dispatch:          # Manual trigger
 
 jobs:
