@@ -1,54 +1,60 @@
-name: Run Scheduled Colab Notebook
+name: Run and Email Excel Files
 
 on:
   schedule:
-    - cron: "0 3 * * *"  # Runs daily at 05:00 local (UTC+2)
-  workflow_dispatch:
+    - cron: "0 4 * * *"   # Every day at 04:00 UTC
+  workflow_dispatch:        # Allow manual trigger
 
 permissions:
   contents: write
 
 jobs:
-  run-notebook:
+  run-notebook-and-email:
     runs-on: ubuntu-latest
 
+    env:
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
     steps:
-    - name: Checkout repository
+    - name: 📥 Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Python
+    - name: 🐍 Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: 📦 Install dependencies
       run: |
-        pip install nbconvert nbformat ipykernel jupyter openpyxl
+        pip install nbconvert nbformat ipykernel jupyter openpyxl requests
 
-    - name: Execute notebook
+    - name: 📘 Execute notebook
       run: |
-        cd ${{github.workspace}}
         jupyter nbconvert \
           --to notebook \
           --execute source_kod.ipynb \
           --output executed_notebook.ipynb \
-          --ExecutePreprocessor.timeout=600 \
-          --ExecutePreprocessor.allow_errors=True
+          --ExecutePreprocessor.timeout=600
 
-    - name: Send Email with Excel Attachments
+    - name: 📧 Send Email with Excel Attachments
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
         server_port: 587
         username: ${{ secrets.EMAIL_USER }}
         password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "Excel shift reports"
-        body: "Attached are today's automatically generated Excel reports."
-        to: ${{ secrets.EMAIL_TO }}
+        subject: "xcel Reports"
+        body: "Attached are the generated Excel reports from today's scheduled GitHub run."
         from: ${{ secrets.EMAIL_USER }}
-        attachments: excel_reports/*.xlsx
+        to: ${{ secrets.EMAIL_TO }}
+        attachments: |
+          excel_reports/*.xlsx
 
-
+    - name: 🧹 Clean Excel Output Folder
+      run: |
+        rm -f excel_reports/*.xlsx
 
 
 
