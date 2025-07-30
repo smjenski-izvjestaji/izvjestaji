@@ -27,6 +27,7 @@ jobs:
 
     - name: Execute notebook
       run: |
+        cd ${{github.workspace}}
         jupyter nbconvert \
           --to notebook \
           --execute source_kod.ipynb \
