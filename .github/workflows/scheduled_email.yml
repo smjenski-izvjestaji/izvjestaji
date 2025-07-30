@@ -37,7 +37,11 @@ jobs:
           --execute source_kod.ipynb \
           --output executed_notebook.ipynb \
           --ExecutePreprocessor.timeout=600
-
+    - name: Upload output notebook
+      uses: actions/upload-artifact@v4
+      with:
+        name: executed-notebook
+        path: executed_notebook.ipynb
     - name: 📧 Send Email with Excel Attachments
       uses: dawidd6/action-send-mail@v3
       with:
