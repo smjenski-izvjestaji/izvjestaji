@@ -2,7 +2,7 @@ name: Run Scheduled Colab Notebook
 
 on:
   schedule:
-    - cron: "0 12 * * *"  # Every day at 12:00 UTC
+    - cron: "0 3 * * *"  # Runs daily at 05:00 local (UTC+2)
   workflow_dispatch:
 
 permissions:
@@ -30,44 +30,32 @@ jobs:
       run: |
         pip install nbconvert nbformat ipykernel jupyter openpyxl
 
-    - name: Execute notebook and generate Excel files
+    - name: Execute notebook
       run: |
         jupyter nbconvert \
           --to notebook \
           --execute source_kod.ipynb \
           --output executed_notebook.ipynb \
-          --ExecutePreprocessor.timeout=600
-    
-    - name: Upload executed notebook for inspection
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: failed-notebook
-        path: executed_notebook.ipynb
-    - name: Debug Show output folder contents
-      run: |
-        echo "📁 Contents of output_folder:"
-        ls -l ${{ github.workspace }}/output_folder
-    - name: Debug List contents
-      run: |
-        echo "🧾 Checking output_folder:"
-        ls -lh output_folder || echo "❌ output_folder is missing or empty."
+          --ExecutePreprocessor.timeout=600 \
+          --ExecutePreprocessor.allow_errors=True
 
-    - name: ✅ Send email with Excel attachments
+    - name: Send Email with Excel Attachments
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
         server_port: 587
         username: ${{ secrets.EMAIL_USER }}
         password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "✅ Excel Report"
-        body: "See attached Excel reports generated from source_kod.ipynb."
+        subject: "✅ Daily Shift Excel Reports"
+        body: "Attached are today's automatically generated Excel reports."
         to: ${{ secrets.EMAIL_TO }}
         from: GitHub Actions <${{ secrets.EMAIL_USER }}>
-        attachments: ${{ github.workspace }}/output_folder/*.xlsx
+        attachments: output_folder/*.xlsx
 
-    - name: 🧹 Clean up output folder
-      run: rm -f output_folder/*.xlsx
+    - name: Clean up Excel files from output_folder
+      run: |
+        rm -f output_folder/*.xlsx
+
 
 
 
