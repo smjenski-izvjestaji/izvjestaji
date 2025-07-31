@@ -50,4 +50,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkou
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install nbconvert nbformat ipykernel jupyter openpyxl requests
+
+      - name: 📘 Execute notebook
+        run: |
+          jupyter nbconvert \
+            --to notebook \
+            --execute source_kod.ipynb \
+            --output executed_notebook.ipynb \
+            --ExecutePreprocessor.timeout=600
+
+      - name: Upload output notebook
+        uses: actions/upload-artifact@v4
+        with:
+          name: executed-notebook
+          path: executed_notebook.ipynb
+
+      - name: 📧 Send Email with Excel Attachments
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Evocon SMjenski izvještaji"
+          body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
+          from: ${{ secrets.EMAIL_USER }}
+          to: ${{ secrets.EMAIL_TO }}
+          attachments: |
+            excel_reports/*.xlsx
+
+      - name: 🧹 Clean Excel Output Folder
+        run: |
+          rm -f excel_reports/*.xlsx
