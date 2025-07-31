@@ -3,9 +3,7 @@ name: Run and Email Excel Files
 on:
   schedule:
     # UTC times covering 05:30 CET, 06:30 CEST, 13:30 CET, 14:30 CEST, 21:30 CET, 22:30 CEST
-    - cron: '30 4,5 * * *'
-    - cron: '30 12,13 * * *'
-    - cron: '30 20,21 * * *'
+    - cron: '30 4,5,12,13,20,21 * * *'
   workflow_dispatch:
 
 permissions:
