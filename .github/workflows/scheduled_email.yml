@@ -16,6 +16,8 @@ jobs:
       EMAIL_USER: ${{ secrets.EMAIL_USER }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       EMAIL_TO: ${{ secrets.EMAIL_TO }}
+      API_KEY: ${{ secrets.API_KEY }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
     - name: 📥 Checkout repository
