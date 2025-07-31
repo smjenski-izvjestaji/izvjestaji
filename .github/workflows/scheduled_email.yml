@@ -2,35 +2,66 @@ name: Run and Email Excel Files
 
 on:
   schedule:
-    - cron: "0 4 * * *"   # Every day at 04:00 UTC
-  workflow_dispatch:        # Allow manual trigger
+    - cron: '30 4,5 * * *'  # UTC 4:30 and 5:30 → covers 5:30 CET and 6:30 CEST
+    - cron: '30 12,13 * * *'  # UTC 12:30 and 13:30 → covers 13:30 CET and 14:30 CEST
+    - cron: '30 20,21 * * *'  # UTC 20:30 and 21:30 → covers 21:30 CET and 22:30 CEST
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+
+env:
+  EMAIL_USER: ${{ secrets.EMAIL_USER }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+  EMAIL_TO: ${{ secrets.EMAIL_TO }}
+  API_KEY: ${{ secrets.API_KEY }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
 jobs:
+  check-run:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check_local_time.outputs.run }}
+    steps:
+      - name: Check local time
+        id: check_local_time
+        run: |
+          echo "Trigger: ${{ github.event_name }}"
+          if [[ "${{ github.event_name }}" == 'schedule' ]]; then
+            current_hour=$(TZ=Europe/Berlin date +'%H')
+            current_minute=$(TZ=Europe/Berlin date +'%M')
+            echo "Local time: $current_hour:$current_minute"
+            if [[ "$current_hour" == "6" && "$current_minute" == "30" ]]; then
+              echo "run=True" >> $GITHUB_OUTPUT
+            elif [[ "$current_hour" == "14" && "$current_minute" == "30 ]]; then 
+              echo "run=True" >> $GITHUB_OUTPUT
+            elif [[ "$current_hour" == "22" && "$current_minute" == "30 ]]; then 
+              echo "run=True" >> $GITHUB_OUTPUT
+            else
+              echo "run=False" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Manual trigger, skipping time check"
+            echo "run=True" >> $GITHUB_OUTPUT
+
   run-notebook-and-email:
+    needs: check-run
+    if: needs.check-run.outputs.run == 'True'
     runs-on: ubuntu-latest
 
-    env:
-      EMAIL_USER: ${{ secrets.EMAIL_USER }}
-      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-      EMAIL_TO: ${{ secrets.EMAIL_TO }}
-      API_KEY: ${{ secrets.API_KEY }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-
     steps:
-    - name: 📥 Checkout repository
-      uses: actions/checkout@v3
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
 
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: 📦 Install dependencies
-      run: |
-        pip install nbconvert nbformat ipykernel jupyter openpyxl requests
+      - name: 📦 Install dependencies
+        run: |
+          pip install nbconvert nbformat ipykernel jupyter openpyxl requests
 
     - name: 📘 Execute notebook
       run: |
@@ -51,8 +82,8 @@ jobs:
         server_port: 587
         username: ${{ secrets.EMAIL_USER }}
         password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "xcel Reports"
-        body: "Attached are the generated Excel reports from today's scheduled GitHub run."
+        subject: "Evocon SMjenski izvještaji"
+        body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
         from: ${{ secrets.EMAIL_USER }}
         to: ${{ secrets.EMAIL_TO }}
         attachments: |
@@ -61,8 +92,6 @@ jobs:
     - name: 🧹 Clean Excel Output Folder
       run: |
         rm -f excel_reports/*.xlsx
-
-
 
 
 
