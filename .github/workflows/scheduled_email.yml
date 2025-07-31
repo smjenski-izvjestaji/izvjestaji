@@ -2,9 +2,10 @@ name: Run and Email Excel Files
 
 on:
   schedule:
-    - cron: '30 4,5 * * *'   # Covers 5:30 CET and 6:30 CEST
-    - cron: '30 12,13 * * *' # Covers 13:30 CET and 14:30 CEST
-    - cron: '30 20,21 * * *' # Covers 21:30 CET and 22:30 CEST
+    # UTC times covering 05:30 CET, 06:30 CEST, 13:30 CET, 14:30 CEST, 21:30 CET, 22:30 CEST
+    - cron: '30 4,5 * * *'
+    - cron: '30 12,13 * * *'
+    - cron: '30 20,21 * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,9 +29,10 @@ jobs:
         run: |
           echo "Trigger: ${{ github.event_name }}"
           if [[ "${{ github.event_name }}" == 'schedule' ]]; then
-            current_hour=$(TZ=Europe/Berlin date +'%H')
-            current_minute=$(TZ=Europe/Berlin date +'%M')
+            current_hour=$(TZ=Europe/Zagreb date +'%H')
+            current_minute=$(TZ=Europe/Zagreb date +'%M')
             echo "Local time: $current_hour:$current_minute"
+
             if [[ "$current_hour" == "6" && "$current_minute" == "30" ]]; then
               echo "run=True" >> $GITHUB_OUTPUT
             elif [[ "$current_hour" == "14" && "$current_minute" == "30" ]]; then
@@ -43,6 +45,7 @@ jobs:
           else
             echo "Manual trigger, skipping time check"
             echo "run=True" >> $GITHUB_OUTPUT
+          fi
 
   run-notebook-and-email:
     needs: check-run
@@ -70,26 +73,5 @@ jobs:
             --output executed_notebook.ipynb \
             --ExecutePreprocessor.timeout=600
 
-      - name: Upload output notebook
+      - name: 📤 Upload executed notebook
         uses: actions/upload-artifact@v4
-        with:
-          name: executed-notebook
-          path: executed_notebook.ipynb
-
-      - name: 📧 Send Email with Excel Attachments
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.EMAIL_USER }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Evocon SMjenski izvještaji"
-          body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
-          from: ${{ secrets.EMAIL_USER }}
-          to: ${{ secrets.EMAIL_TO }}
-          attachments: |
-            excel_reports/*.xlsx
-
-      - name: 🧹 Clean Excel Output Folder
-        run: |
-          rm -f excel_reports/*.xlsx
