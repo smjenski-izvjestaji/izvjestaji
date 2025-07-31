@@ -2,14 +2,13 @@ name: Run and Email Excel Files
 
 on:
   schedule:
-    - cron: '30 4,5 * * *'  # UTC 4:30 and 5:30 → covers 5:30 CET and 6:30 CEST
-    - cron: '30 12,13 * * *'  # UTC 12:30 and 13:30 → covers 13:30 CET and 14:30 CEST
-    - cron: '30 20,21 * * *'  # UTC 20:30 and 21:30 → covers 21:30 CET and 22:30 CEST
+    - cron: '30 4,5 * * *'   # Covers 5:30 CET and 6:30 CEST
+    - cron: '30 12,13 * * *' # Covers 13:30 CET and 14:30 CEST
+    - cron: '30 20,21 * * *' # Covers 21:30 CET and 22:30 CEST
   workflow_dispatch:
 
 permissions:
   contents: write
-
 
 env:
   EMAIL_USER: ${{ secrets.EMAIL_USER }}
@@ -34,9 +33,9 @@ jobs:
             echo "Local time: $current_hour:$current_minute"
             if [[ "$current_hour" == "6" && "$current_minute" == "30" ]]; then
               echo "run=True" >> $GITHUB_OUTPUT
-            elif [[ "$current_hour" == "14" && "$current_minute" == "30 ]]; then 
+            elif [[ "$current_hour" == "14" && "$current_minute" == "30" ]]; then
               echo "run=True" >> $GITHUB_OUTPUT
-            elif [[ "$current_hour" == "22" && "$current_minute" == "30 ]]; then 
+            elif [[ "$current_hour" == "22" && "$current_minute" == "30" ]]; then
               echo "run=True" >> $GITHUB_OUTPUT
             else
               echo "run=False" >> $GITHUB_OUTPUT
@@ -51,52 +50,4 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v3
-
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: 📦 Install dependencies
-        run: |
-          pip install nbconvert nbformat ipykernel jupyter openpyxl requests
-
-    - name: 📘 Execute notebook
-      run: |
-        jupyter nbconvert \
-          --to notebook \
-          --execute source_kod.ipynb \
-          --output executed_notebook.ipynb \
-          --ExecutePreprocessor.timeout=600
-    - name: Upload output notebook
-      uses: actions/upload-artifact@v4
-      with:
-        name: executed-notebook
-        path: executed_notebook.ipynb
-    - name: 📧 Send Email with Excel Attachments
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USER }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "Evocon SMjenski izvještaji"
-        body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
-        from: ${{ secrets.EMAIL_USER }}
-        to: ${{ secrets.EMAIL_TO }}
-        attachments: |
-          excel_reports/*.xlsx
-
-    - name: 🧹 Clean Excel Output Folder
-      run: |
-        rm -f excel_reports/*.xlsx
-
-
-
-
-
-
-
-
+      - name: 📥 Checkou
