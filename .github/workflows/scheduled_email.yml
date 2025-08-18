@@ -2,7 +2,7 @@ name: Run and Email Excel Files
 
 on:
   schedule:
-    # UTC times covering 05:30 CET, 06:30 CEST, 13:30 CET, 14:30 CEST, 21:30 CET, 22:30 CEST
+    # Covers CET and CEST offsets, we’ll filter in job
     - cron: '30 4,5,12,13,20,21 * * *'
   workflow_dispatch:
 
@@ -22,16 +22,19 @@ jobs:
     outputs:
       run: ${{ steps.check_local_time.outputs.run }}
     steps:
-      - name: Check local time
+      - name: Check Europe/Zagreb local time or bypass for manual
         id: check_local_time
         run: |
           echo "Trigger: ${{ github.event_name }}"
-          if [[ "${{ github.event_name }}" == 'schedule' ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual trigger → skipping time check"
+            echo "run=True" >> $GITHUB_OUTPUT
+          else
             current_hour=$(TZ=Europe/Zagreb date +'%H')
             current_minute=$(TZ=Europe/Zagreb date +'%M')
-            echo "Local time: $current_hour:$current_minute"
+            echo "Local time is: $current_hour:$current_minute"
 
-            if [[ "$current_hour" == "6" && "$current_minute" == "30" ]]; then
+            if [[ "$current_hour" == "06" && "$current_minute" == "30" ]]; then
               echo "run=True" >> $GITHUB_OUTPUT
             elif [[ "$current_hour" == "14" && "$current_minute" == "30" ]]; then
               echo "run=True" >> $GITHUB_OUTPUT
@@ -40,9 +43,6 @@ jobs:
             else
               echo "run=False" >> $GITHUB_OUTPUT
             fi
-          else
-            echo "Manual trigger, skipping time check"
-            echo "run=True" >> $GITHUB_OUTPUT
           fi
 
   run-notebook-and-email:
@@ -94,3 +94,4 @@ jobs:
       - name: 🧹 Clean Excel Output Folder
         run: |
           rm -f excel_reports/*.xlsx
+
