@@ -1,6 +1,5 @@
 name: Test Scheduler
 
-
 on:
   schedule:
     - cron: "*/5 * * * *"  # Every 5 minutes
@@ -13,3 +12,5 @@ jobs:
       - run: |
           echo "UTC time: $(date -u)"
           echo "Berlin time: $(TZ=Europe/Berlin date)"
+
+# Added comment to trigger workflow schedule activation
