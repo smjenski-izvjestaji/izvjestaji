@@ -3,7 +3,7 @@ name: Run and Email Excel Files
 on:
   schedule:
     # Covers CET and CEST offsets, we’ll filter in job
-    - cron: '15,30,45 7,8,9 * * *'
+    - cron: '0,15,30,45 7,8,9 * * *'
   workflow_dispatch:
 
 permissions:
