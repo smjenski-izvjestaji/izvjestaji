@@ -1,4 +1,4 @@
-name: NO TIMEZONE Run and Email Excel Files
+name: EXECUTEABLE Run and Email Excel Files
 
 on:
   schedule:
