@@ -1,9 +1,9 @@
 name: NO TIMEZONE Run and Email Excel Files
 
 on:
-  schedule:
+  #schedule:
     # Covers CET and CEST offsets, we’ll filter in job
-    - cron: '*/5 */1 * * *'
+    #- cron: '*/5 */1 * * *'
   workflow_dispatch:
 
 permissions:
