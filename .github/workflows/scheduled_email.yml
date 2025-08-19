@@ -57,7 +57,7 @@ jobs:
           subject: "Evocon Smjenski izvještaji"
           body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
           from: ${{ secrets.EMAIL_USER }}
-          to: ${{ secrets.EMAIL_USER }}
+          to: ${{ secrets.EMAIL_TO }}
           attachments: |
             excel_reports/*.xlsx
 
