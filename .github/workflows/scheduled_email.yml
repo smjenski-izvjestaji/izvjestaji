@@ -1,9 +1,9 @@
-name: Run and Email Excel Files
+name: NO TIMEZONE Run and Email Excel Files
 
 on:
   schedule:
     # Covers CET and CEST offsets, we’ll filter in job
-    - cron: '30 4,5,12,13,20,21 * * *'
+    - cron: '30 4,12,20 * * *'
   workflow_dispatch:
 
 permissions:
@@ -17,37 +17,7 @@ env:
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
 jobs:
-  check-run:
-    runs-on: ubuntu-latest
-    outputs:
-      run: ${{ steps.check_local_time.outputs.run }}
-    steps:
-      - name: Check Europe/Zagreb local time or bypass for manual
-        id: check_local_time
-        run: |
-          echo "Trigger: ${{ github.event_name }}"
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "Manual trigger → skipping time check"
-            echo "run=true" >> $GITHUB_OUTPUT
-          else
-            current_hour=$(TZ=Europe/Zagreb date +'%H')
-            current_minute=$(TZ=Europe/Zagreb date +'%M')
-            echo "Local time is: $current_hour:$current_minute"
-
-            if [[ "$current_hour" == "06" && "$current_minute" == "30" ]]; then
-              echo "run=true" >> $GITHUB_OUTPUT
-            elif [[ "$current_hour" == "14" && "$current_minute" == "30" ]]; then
-              echo "run=true" >> $GITHUB_OUTPUT
-            elif [[ "$current_hour" == "22" && "$current_minute" == "30" ]]; then
-              echo "run=true" >> $GITHUB_OUTPUT
-            else
-              echo "run=false" >> $GITHUB_OUTPUT
-            fi
-          fi
-
   run-notebook-and-email:
-    needs: check-run
-    if: needs.check-run.outputs.run == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -87,7 +57,7 @@ jobs:
           subject: "Evocon Smjenski izvještaji"
           body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
           from: ${{ secrets.EMAIL_USER }}
-          to: ${{ secrets.EMAIL_TO }}
+          to: ${{ secrets.EMAIL_USER }}
           attachments: |
             excel_reports/*.xlsx
 
