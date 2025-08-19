@@ -54,8 +54,8 @@ jobs:
           server_port: 587
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Evocon Smjenski izvještaji"
-          body: "U privitku se nalaze današnji smjenski izvještaji za određenu smjenu."
+          subject: "Evocon Izvještaj Test"
+          body: "U privitku se nalaze smjenski izvještaji provedeni u ovom testu. Ovaj mail je automatski generiran."
           from: ${{ secrets.EMAIL_USER }}
           to: ${{ secrets.EMAIL_TO }}
           attachments: |
